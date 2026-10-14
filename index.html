@@ -2,63 +2,90 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LA PATADA KING KONG IA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LA PATADA KING KONG IA - 3D</title>
 <style>
-body{margin:0;background:#000;color:#0f0;font-family:monospace;padding:10px}
-.panel{max-width:400px;margin:20px auto;background:#0a0a0a;border:2px solid #0f0;border-radius:15px;padding:20px;box-shadow:0 0 25px #0f0}
-h1{text-align:center;font-size:22px}
-input{width:100%;padding:12px;margin:8px 0;background:#111;color:#0f0;border:1px solid #0f0;border-radius:10px;box-sizing:border-box}
-button{width:100%;padding:13px;margin-top:10px;background:#0f0;color:#000;font-weight:bold;border:none;border-radius:10px;font-size:15px}
-#codigo{font-size:18px;text-align:center;margin-top:15px;background:#111;padding:15px;border-radius:10px;min-height:20px;word-break:break-all}
-.small{font-size:11px;color:#555;text-align:center;margin-top:10px}
-hr{border:0;border-top:1px solid #0f0;margin:20px 0}
+body{margin:0;background:#000;color:#fff;font-family:Arial;overflow:hidden}
+#canvas{width:100%;height:100vh;display:block}
+#ui{position:absolute;top:10px;left:10px;z-index:10;background:rgba(0,0,0,0.7);padding:15px;border-radius:10px}
+button{padding:12px 20px;margin:5px;font-size:16px;background:#ffcc00;color:#000;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+button:hover{background:#fff}
+#whatsapp{background:#25D366;color:white}
 </style>
 </head>
 <body>
-<div class="panel">
-<h1>🦍 LA PATADA KING KONG IA</h1>
-<p style="text-align:center">@pocholo_dark_king_kong_bot</p>
-<hr>
-<p>1. WHATSAPP - VINCULACIÓN POR NÚMERO:</p>
-<input id="num" placeholder="Ej: 5351234567 (sin +)">
-<button onclick="pedirCodigo()">🦍 GENERAR CÓDIGO DE 8 DÍGITOS</button>
-<div id="codigo">Aquí saldrá tu código</div>
-<hr>
-<p>2. TELEGRAM - TOKEN:</p>
-<input id="tg" type="password" placeholder="8899349942:AAES4zwAfDXI6L8zFbbKZv4cYTt85mWH5qo">
-<button onclick="saveTG()" style="background:#0088cc;color:#fff">GUARDAR EN TELÉFONO</button>
-<div id="status" style="text-align:center;margin-top:10px"></div>
-<p class="small">Repo: la-patada-king-kong-IA | Todo se guarda solo en tu teléfono</p>
+<canvas id="canvas"></canvas>
+<div id="ui">
+<h2>🦍 LA PATADA KING KONG IA</h2>
+<button onclick="kick()">¡PATADA KING KONG!</button>
+<button id="whatsapp" onclick="shareWhatsApp()">📲 Compartir WhatsApp</button>
+<p id="status">Listo para patear</p>
 </div>
-<script>
-const BACKEND_URL = "https://PON-AQUI-TU-LINK-DE-RENDER.onrender.com";
-async function pedirCodigo(){
-  const n = document.getElementById('num').value.trim();
-  if(n.length < 8){document.getElementById('codigo').innerHTML='❌ Pon un número válido';return;}
-  document.getElementById('codigo').innerHTML='⏳ Generando código...';
-  try{
-    const res = await fetch(BACKEND_URL + '/code', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({number:n})});
-    const data = await res.json();
-    if(data.code){
-      document.getElementById('codigo').innerHTML='✅ TU CÓDIGO:<br><b style="font-size:32px;letter-spacing:4px">'+data.code+'</b><br><br>WhatsApp > Dispositivos vinculados > Vincular con número';
-    } else {
-      document.getElementById('codigo').innerHTML='❌ Error: '+(data.error||'Revisa backend');
-    }
-  }catch(e){
-    document.getElementById('codigo').innerHTML='❌ Sin backend aún<br>Cuando pongas tu link de Render funcionará';
-  }
+
+<script type="importmap">
+{
+"imports":{
+"three":"https://unpkg.com/three@0.160.0/build/three.module.js"
 }
-function saveTG(){
-  const v=document.getElementById('tg').value;
-  if(!v){document.getElementById('status').innerHTML='❌ Pega token';return;}
-  localStorage.setItem('tg_king',v);
-  document.getElementById('status').innerHTML='✅ Guardado en este teléfono';
-}
-window.onload=()=>{
-  const s=localStorage.getItem('tg_king');
-  if(s)document.getElementById('tg').value=s;
 }
 </script>
+
+<script type="module">
+import * as THREE from 'three';
+let scene,camera,renderer,kong,leg,angle=0,kicking=false;
+scene=new THREE.Scene();
+scene.background=new THREE.Color(0x111122);
+camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
+camera.position.set(0,2,6);
+renderer=new THREE.WebGLRenderer({canvas:document.getElementById('canvas'),antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+
+// Luz
+const light=new THREE.DirectionalLight(0xffffff,1.5);light.position.set(5,10,5);scene.add(light);
+scene.add(new THREE.AmbientLight(0xffffff,0.5));
+
+// Suelo
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:0x333333}));
+floor.rotation.x=-Math.PI/2;scene.add(floor);
+
+// King Kong simple 3D
+kong=new THREE.Group();
+const body=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.5,0.8),new THREE.MeshStandardMaterial({color:0x222222}));
+body.position.y=1.5;kong.add(body);
+const head=new THREE.Mesh(new THREE.SphereGeometry(0.5,16,16),new THREE.MeshStandardMaterial({color:0x111111}));
+head.position.y=2.7;kong.add(head);
+leg=new THREE.Mesh(new THREE.BoxGeometry(0.4,1.2,0.4),new THREE.MeshStandardMaterial({color:0x111111}));
+leg.position.set(0.3,0.6,0.5);leg.geometry.translate(0,0.6,0);kong.add(leg);
+scene.add(kong);
+
+function animate(){
+requestAnimationFrame(animate);
+if(kicking){
+angle+=0.15;
+leg.rotation.x=Math.sin(angle)*1.8;
+if(angle>3.14){kicking=false;angle=0;leg.rotation.x=0;document.getElementById('status').innerText='¡BOOM! Patada completada 💥';}
+}
+renderer.render(scene,camera);
+}
+animate();
+
+window.kick=function(){
+if(!kicking){kicking=true;angle=0;document.getElementById('status').innerText='¡KING KONG PATEANDO! 🦶';}
+}
+
+window.shareWhatsApp=function(){
+// CAMBIA TU NUMERO ABAJO
+let phone="5355555555"; // pon tu numero sin +
+let text=encodeURIComponent("Mira mi juego 3D LA PATADA KING KONG IA 🦍: https://gonzalespachecolaura23-glitch.github.io/la-patada-king-kong-IA/");
+let url=`https://wa.me/${phone}?text=${text}`;
+// Para compartir sin numero fijo usa: https://wa.me/?text=
+window.open(url,'_blank');
+}
+
+window.addEventListener('resize',()=>{
+camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth,window.innerHeight);
+});
+</script>
 </body>
-  </html>
+</html>
