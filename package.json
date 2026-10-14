@@ -1,0 +1,20 @@
+{
+  "name": "la-patada-king-kong-IA",
+  "version": "1.0.0",
+  "description": "LA PATADA DE KING KONG IA",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.18",
+    "pino": "^8.16.2",
+    "qrcode-terminal": "^0.12.0",
+    "axios": "^1.6.2",
+    "fs-extra": "^11.2.0",
+    "libsignal": "^2.0.0",
+    "jimp": "^0.22.10",
+    "node-cache": "^5.1.2"
+  }
+}
